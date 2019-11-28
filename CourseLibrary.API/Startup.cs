@@ -48,6 +48,17 @@ namespace CourseLibrary.API
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("An unexpected server error");
+                    });
+                });
+            }
 
             app.UseRouting();
 
