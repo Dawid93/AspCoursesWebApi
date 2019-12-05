@@ -27,7 +27,8 @@ namespace CourseLibrary.API.Controllers
         [HttpGet()]
         public ActionResult<IEnumerable<CourseDto>> GetCoursesForAuthor(Guid authorId)
         {
-            if (!courseLibraryRepository.AuthorExists(authorId)) {
+            if (!courseLibraryRepository.AuthorExists(authorId))
+            {
                 return NotFound();
             }
             var coursesFromRepository = courseLibraryRepository.GetCourses(authorId);
@@ -71,7 +72,7 @@ namespace CourseLibrary.API.Controllers
 
             var courseAuthorFromRepo = courseLibraryRepository.GetCourse(authorId, courseId);
 
-            if(courseAuthorFromRepo == null)
+            if (courseAuthorFromRepo == null)
             {
                 return NotFound();
             }
@@ -100,14 +101,39 @@ namespace CourseLibrary.API.Controllers
             }
 
             var coursePatch = mapper.Map<CourseForUpdateDto>(courseAuthorFromRepo);
-            patchDocument.ApplyTo(coursePatch);
+            patchDocument.ApplyTo(coursePatch, ModelState);
 
-            // 
+            if (!TryValidateModel(coursePatch))
+            {
+                return ValidationProblem(ModelState);
+            }
 
             mapper.Map(coursePatch, courseAuthorFromRepo);
             courseLibraryRepository.UpdateCourse(courseAuthorFromRepo);
             courseLibraryRepository.Save();
             return NoContent();
         }
+
+        [HttpDelete("{courseId}")]
+        public ActionResult DeleteCourseFromAuthor(Guid authorId, Guid courseId)
+        {
+            if (!courseLibraryRepository.AuthorExists(authorId))
+            {
+                return NotFound();
+            }
+
+            var courseAuthorFromRepo = courseLibraryRepository.GetCourse(authorId, courseId);
+
+            if (courseAuthorFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            courseLibraryRepository.DeleteCourse(courseAuthorFromRepo);
+            courseLibraryRepository.Save();
+            return NoContent();
+        }
+
+
     }
 }
